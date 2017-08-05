@@ -61,15 +61,15 @@ class RelistenSpider(scrapy.Spider):
         begin_month_int = int(self.day_begin[3:5])
         begin_year_int = int(self.day_begin[6:])
 
-        if year_int >= begin_year_int \
-            and (year_int == begin_year_int and month_int >= begin_month_int) \
-                and (year_int == begin_year_int and month_int == begin_month_int and day_int >= begin_day_int):
+        if year_int < begin_year_int \
+            or (year_int == begin_year_int and month_int < begin_month_int) \
+                or (year_int == begin_year_int and month_int == begin_month_int and day_int < begin_day_int):
+            print('LIMIT OF DATES RANGE.')
+            is_within_requested_days = False
+        else:
             self.day = str(day_int).zfill(2) + '-' + str(month_int).zfill(2) + '-' + str(year_int)
             print('NEW DAY -> ' + self.day)
             is_within_requested_days = True
-        else:
-            print('LIMIT OF DATES RANGE.')
-            is_within_requested_days = False
 
         return is_within_requested_days
 

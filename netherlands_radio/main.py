@@ -84,14 +84,13 @@ else:
 
 spider_name = 'Relisten'
 station = ['veronica', '3fm', 'skyradio', 'qmusic', '100p',
-            'radio10', '538', 'slamfm', 'sublimefm', 'radionl']
+           'radio10', '538', 'slamfm', 'sublimefm', 'radionl']
 radio_station = station[0]
 
 # spider_name = 'NpoRadio'
 # station = ['NpoRadio1', '2', '4', '5', '6']
 # radio_station = station[0]
 
-for radio_station in station:
-    nl_crawler = NetherlandsCrawler(spider_name=spider_name, radio_station=radio_station,
-                                    day_begin='01-01-2017', day_end='31-07-2017')
-    nl_crawler.get_lists()
+nl_crawler = NetherlandsCrawler(spider_name=spider_name, radio_station=radio_station,
+                                day_begin='01-01-2017', day_end='31-07-2017')
+nl_crawler.get_lists()
