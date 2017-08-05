@@ -28,6 +28,7 @@ class RelistenSpider(scrapy.Spider):
         self.sheet.write(0, 0, 'Track Title')
         self.sheet.write(0, 1, 'Track Artist')
         self.sheet.write(0, 2, 'Count')
+        self.sheet.write(0, 3, 'URL From')
         self.row = 1
 
     def build_urls(self):
@@ -89,8 +90,9 @@ class RelistenSpider(scrapy.Spider):
             print('Appending Track -> ' + '"' + title + '"' + ' by ' + artist)
             self.sheet.write(self.row, 0, title)
             self.sheet.write(self.row, 1, artist)
+            self.sheet.write(self.row, 3, self.url)
             self.row += 1
-            self.all_tracks.append([title, artist])
+            self.all_tracks.append([title, artist, self.url])
         print('...tracks of url [ ' + self.url + ' ] finished.')
 
     def parse_error(self, response):
