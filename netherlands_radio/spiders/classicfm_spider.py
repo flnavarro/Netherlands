@@ -43,7 +43,7 @@ class ClassicFmSpider(scrapy.Spider):
         is_within_requested_days = True
         while True:
             if is_within_requested_days:
-                for hour in range(0, 23):
+                for hour in range(0, 24):
                     url = self.root_url + self.day + '/' + str(hour).zfill(2) + '#top'
                     print('NEW URL -> ' + url)
                     self.urls.append(url)
