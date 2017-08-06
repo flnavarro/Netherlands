@@ -64,7 +64,10 @@ class OmroepSpider(scrapy.Spider):
             artists = response.css('li').css('strong::text').extract()
 
         elif self.radio_station == 'Flevoland':
-            tracks_and_radios = response.css('td').css('a::text').extract()[1:]
+            if '0' in response.url:
+                tracks_and_radios = response.css('td').css('a::text').extract()[1:]
+            else:
+                tracks_and_radios = response.css('td').css('a::text').extract()
             for track_or_radio in tracks_and_radios:
                 if ' - ' in track_or_radio:
                     track = track_or_radio.split(' - ')
