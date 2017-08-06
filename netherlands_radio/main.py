@@ -1,11 +1,13 @@
 import argparse
 import os
+import xlrd, xlwt
 
 from scrapy.crawler import CrawlerProcess
 
 from spiders import settings
 from spiders.relisten_spider import RelistenSpider
 from spiders.nporadio_spider import NpoRadioSpider
+from spiders.classicfm_spider import ClassicFmSpider
 
 
 class NetherlandsCrawler(object):
@@ -16,6 +18,8 @@ class NetherlandsCrawler(object):
             self.spider = RelistenSpider
         elif spider_name == 'NpoRadio':
             self.spider = NpoRadioSpider
+        elif spider_name == 'ClassicFm':
+            self.spider = ClassicFmSpider
 
         self.radio_station = radio_station
         self.day_begin = day_begin
@@ -28,6 +32,43 @@ class NetherlandsCrawler(object):
         process.crawl(self.spider, radio_station=self.radio_station,
                       day_begin=self.day_begin, day_end=self.day_end)
         process.start()
+
+    def count_plays(self):
+        file_path = self.radio_station + '.xls'
+        xls = xlrd.open_workbook(file_path, formatting_info=True)
+        n_rows = xls.sheet_by_index(0).nrows
+        sheet_to_read = xls.sheet_by_index(0)
+        track_list = []
+        for row in range(1, n_rows):
+            title = sheet_to_read.cell(row, 0).value
+            artist = sheet_to_read.cell(row, 1).value
+            if len(track_list) == 0:
+                track_list.append([title, artist, 1])
+                print(artist + ' - ' + title + ' // (FIRST TRACK on LIST)')
+            already_in_list = False
+            for track in track_list:
+                if track[0] == title and track[1] == artist:
+                    already_in_list = True
+                    break
+            if already_in_list:
+                track_list[track_list.index(track)][2] += 1
+                print(artist + ' - ' + title + ' // (PLAY COUNT) // Plays -> ' + str(track[2]))
+            else:
+                track_list.append([title, artist, 1])
+                print(artist + ' - ' + title + ' // (NEW TRACK on LIST)')
+
+        list_xls = xlwt.Workbook()
+        sheet = list_xls.add_sheet(self.radio_station + ' Playlist')
+        sheet.write(0, 0, 'Track Title')
+        sheet.write(0, 1, 'Track Artist')
+        sheet.write(0, 2, 'Play Count')
+        row = 1
+        for track in track_list:
+            sheet.write(row, 0, track[0])
+            sheet.write(row, 1, track[1])
+            sheet.write(row, 2, str(track[2]))
+            row += 1
+        list_xls.save(self.radio_station + '_output.xls')
 
 
 # TODO: Adapt to new parsing without batches
@@ -82,15 +123,19 @@ else:
     pass
 
 
-spider_name = 'Relisten'
-station = ['veronica', '3fm', 'skyradio', 'qmusic', '100p',
-           'radio10', '538', 'slamfm', 'sublimefm', 'radionl']
-radio_station = station[0]
+# spider_name = 'Relisten'
+# station = ['veronica', '3fm', 'skyradio', 'qmusic', '100p',
+#            'radio10', '538', 'slamfm', 'sublimefm', 'radionl']
+# radio_station = station[9]
 
 # spider_name = 'NpoRadio'
-# station = ['NpoRadio1', '2', '4', '5', '6']
-# radio_station = station[0]
+# station = ['NpoRadio1', 'NpoRadio2', 'NpoRadio4', 'NpoRadio5']
+# radio_station = station[1]
+
+spider_name = 'ClassicFm'
+radio_station = 'classicfm'
 
 nl_crawler = NetherlandsCrawler(spider_name=spider_name, radio_station=radio_station,
                                 day_begin='01-01-2017', day_end='31-07-2017')
 nl_crawler.get_lists()
+nl_crawler.count_plays()

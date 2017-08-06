@@ -16,14 +16,33 @@ class NpoRadioSpider(scrapy.Spider):
         self.radio_station = radio_station
         self.day_begin = day_begin
         self.day_end = day_end
-        self.day = str(int(self.day_end[6:])) + '-' + \
-            str(int(self.day_end[3:5])).zfill(2) + '-' + \
-            str(int(self.day_end[:2])).zfill(2)
 
-        if self.radio_station == 'NpoRadio1':
-            self.root_url = 'http://www.nporadio1.nl/muziek/'
+        if self.day_begin == '':
+            if self.radio_station == 'NpoRadio1':
+                self.day_begin = '01-01-2016'
+            elif self.radio_station == 'NpoRadio2' or self.radio_station == 'NpoRadio5':
+                self.day_begin = '01-01-2015'
+            elif self.radio_station == 'NpoRadio4':
+                self.day_begin = '01-01-2012'
 
-        self.url = ''
+        if self.radio_station == 'NpoRadio1' or self.radio_station == 'NpoRadio4':
+            if self.radio_station == 'NpoRadio1':
+                self.root_url = 'http://www.nporadio1.nl/muziek/'
+            elif self.radio_station == 'NpoRadio4':
+                self.root_url = 'http://www.radio4.nl/speellijst/'
+
+            self.day = str(int(self.day_end[6:])) + '-' + \
+                str(int(self.day_end[3:5])).zfill(2) + '-' + \
+                str(int(self.day_end[:2])).zfill(2)
+
+        elif self.radio_station == 'NpoRadio2' or self.radio_station == 'NpoRadio5':
+            if self.radio_station == 'NpoRadio2':
+                self.root_url = 'http://www.nporadio2.nl/playlist?date='
+            elif self.radio_station == 'NpoRadio5':
+                self.root_url = 'http://www.nporadio5.nl/playlist?show=all&date='
+
+            self.day = self.day_end
+
         self.urls = []
         self.build_urls()
 
@@ -50,9 +69,16 @@ class NpoRadioSpider(scrapy.Spider):
 
     def get_previous_day(self):
         print('Getting previous day...')
-        year_int = int(self.day[:4])
-        month_int = int(self.day[5:7])
-        day_int = int(self.day[8:])
+
+        if self.radio_station == 'NpoRadio1' or self.radio_station == 'NpoRadio4':
+            year_int = int(self.day[:4])
+            month_int = int(self.day[5:7])
+            day_int = int(self.day[8:])
+        elif self.radio_station == 'NpoRadio2' or self.radio_station == 'NpoRadio5':
+            day_int = int(self.day[:2])
+            month_int = int(self.day[3:5])
+            year_int = int(self.day[6:])
+
         if day_int > 1:
             day_int -= 1
         else:
@@ -73,7 +99,10 @@ class NpoRadioSpider(scrapy.Spider):
             print('LIMIT OF DATES RANGE.')
             is_within_requested_days = False
         else:
-            self.day = str(year_int) + '-' + str(month_int).zfill(2) + '-' + str(day_int).zfill(2)
+            if self.radio_station == 'NpoRadio1' or self.radio_station == 'NpoRadio4':
+                self.day = str(year_int) + '-' + str(month_int).zfill(2) + '-' + str(day_int).zfill(2)
+            elif self.radio_station == 'NpoRadio2' or self.radio_station == 'NpoRadio5':
+                self.day = str(day_int).zfill(2) + '-' + str(month_int).zfill(2) + '-' + str(year_int)
             print('NEW DAY -> ' + self.day)
             is_within_requested_days = True
 
@@ -81,30 +110,49 @@ class NpoRadioSpider(scrapy.Spider):
 
     def start_requests(self):
         for url in self.urls:
-            self.url = url
             yield scrapy.Request(url=url, callback=self.parse, errback=self.parse_error)
-            time.sleep(5)
-        self.list_xls.save(self.radio_station + '.xls')
+            # time.sleep(5)
 
     def parse(self, response):
-        print('Getting tracks for url...' + self.url)
-        tracks_data = response.css('div.responsive-item__content').css('h1.heading--small').extract()
-        for track_data in tracks_data:
-            new_response = HtmlResponse(url='My Url', body=track_data, encoding='utf-8')
-            if len(new_response.css('a')) > 0:
-                raw_title = new_response.css('a::text').extract_first()
-            else:
-                raw_title = new_response.css('h1.heading--small::text').extract_first()
-            raw_title = raw_title.split('-')
-            title = raw_title[0].rstrip().lstrip()
-            artist = raw_title[1].rstrip().lstrip()
+        print('Getting tracks for url...' + response.url)
+
+        if self.radio_station == 'NpoRadio1':
+            tracks = response.css('div.responsive-item__content').css('h1.heading--small').extract()
+        elif self.radio_station == 'NpoRadio2':
+            tracks = response.css('p.fn-song::text').extract()
+            artists = response.css('p.fn-artist::text').extract()
+        elif self.radio_station == 'NpoRadio4':
+            tracks = response.css('div.l-content').css('span.title::text').extract()
+            artists = response.css('div.l-content').css('strong::text').extract()
+        elif self.radio_station == 'NpoRadio5':
+            tracks = response.css('p.fn-song::text').extract()
+            artists = response.css('h5.fn-artist::text').extract()
+
+        for track in tracks:
+            if self.radio_station == 'NpoRadio1':
+                new_response = HtmlResponse(url='My Url', body=track, encoding='utf-8')
+                if len(new_response.css('a')) > 0:
+                    raw_title = new_response.css('a::text').extract_first()
+                else:
+                    raw_title = new_response.css('h1.heading--small::text').extract_first()
+                raw_title = raw_title.split('-')
+                title = raw_title[0].rstrip().lstrip()
+                artist = raw_title[1].rstrip().lstrip()
+            elif self.radio_station == 'NpoRadio2' \
+                    or self.radio_station == 'NpoRadio4' \
+                    or self.radio_station == 'NpoRadio5':
+                title = track
+                artist = artists[tracks.index(track)]
+
             print('Appending Track -> ' + '"' + title + '"' + ' by ' + artist)
             self.sheet.write(self.row, 0, title)
             self.sheet.write(self.row, 1, artist)
-            self.sheet.write(self.row, 3, self.url)
+            self.sheet.write(self.row, 3, response.url)
             self.row += 1
-            self.all_tracks.append([title, artist, self.url])
-        print('...tracks of url [ ' + self.url + ' ] finished.')
+            self.all_tracks.append([title, artist, response.url])
+            self.list_xls.save(self.radio_station + '.xls')
+
+        print('...tracks of url [ ' + response.url + ' ] finished.')
 
     def parse_error(self, response):
         print('There was an error.')
