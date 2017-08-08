@@ -24,8 +24,8 @@ class NpoRadio6Spider(scrapy.Spider):
 
         self.root_url = 'http://www.nposoulenjazz.nl/playlist'
 
-        # self.urls = []
-        # self.build_urls()
+        self.forms = []
+        self.build_forms()
 
         self.all_tracks = []
         self.list_xls = xlwt.Workbook()
@@ -36,31 +36,30 @@ class NpoRadio6Spider(scrapy.Spider):
         self.sheet.write(0, 3, 'URL From')
         self.row = 1
 
-    # TODO: CHANGE FOR BUILD FORM REQUESTS?
-    def build_urls(self):
-        print('Building urls...')
+    def build_forms(self):
+        print('Building forms...')
         is_within_requested_days = True
         while True:
             if is_within_requested_days:
-                url = self.root_url + self.day
-                print('NEW URL -> ' + url)
-                self.urls.append(url)
+                form_day = str(int(self.day[:2]))
+                form_month = self.day[3:5]
+                form_year = self.day[6:]
+                for hour in range(0, 24):
+                    form_hour = str(hour).zfill(2)
+                    print('NEW FORM -> Day: ' + form_day + ' // Month: ' + form_month +
+                          ' // Year: ' + form_year + ' // Hour: ' + form_hour)
+                    form = [form_day, form_month, form_year, form_hour]
+                    self.forms.append(form)
                 is_within_requested_days = self.get_previous_day()
             else:
                 break
 
-    # TODO: CHECK
     def get_previous_day(self):
         print('Getting previous day...')
 
-        if self.radio_station == 'NpoRadio1' or self.radio_station == 'NpoRadio4':
-            year_int = int(self.day[:4])
-            month_int = int(self.day[5:7])
-            day_int = int(self.day[8:])
-        elif self.radio_station == 'NpoRadio2' or self.radio_station == 'NpoRadio5':
-            day_int = int(self.day[:2])
-            month_int = int(self.day[3:5])
-            year_int = int(self.day[6:])
+        day_int = int(self.day[:2])
+        month_int = int(self.day[3:5])
+        year_int = int(self.day[6:])
 
         if day_int > 1:
             day_int -= 1
@@ -82,10 +81,7 @@ class NpoRadio6Spider(scrapy.Spider):
             print('LIMIT OF DATES RANGE.')
             is_within_requested_days = False
         else:
-            if self.radio_station == 'NpoRadio1' or self.radio_station == 'NpoRadio4':
-                self.day = str(year_int) + '-' + str(month_int).zfill(2) + '-' + str(day_int).zfill(2)
-            elif self.radio_station == 'NpoRadio2' or self.radio_station == 'NpoRadio5':
-                self.day = str(day_int).zfill(2) + '-' + str(month_int).zfill(2) + '-' + str(year_int)
+            self.day = str(day_int).zfill(2) + '-' + str(month_int).zfill(2) + '-' + str(year_int)
             print('NEW DAY -> ' + self.day)
             is_within_requested_days = True
 
@@ -93,25 +89,20 @@ class NpoRadio6Spider(scrapy.Spider):
 
     def start_requests(self):
         yield scrapy.Request(url=self.root_url, callback=self.form_requests, errback=self.parse_error)
-        # for url in self.urls:
-        #     yield scrapy.Request(url=url, callback=self.parse, errback=self.parse_error)
-        #     # time.sleep(5)
 
     def form_requests(self, response):
-        # TODO: MAKE A FOR HERE
-        print('something')
-        yield scrapy.FormRequest.from_response(response,
-                                               formxpath="//form[@class='form_full'][@action='/playlist/zoeken#search']",
-                                               formdata={"daletDay": "7",
-                                                         "daletMonth": "08",
-                                                         "daletYear": "2017",
-                                                         "daletHour": "18"},
-                                               clickdata={"type": "submit"},
-                                               callback=self.parse)
+        for form in self.forms:
+            yield scrapy.FormRequest.from_response(response,
+                                                   formxpath="//form[@class='form_full'][@action='/playlist/zoeken#search']",
+                                                   formdata={"daletDay": form[0],
+                                                             "daletMonth": form[1],
+                                                             "daletYear": form[2],
+                                                             "daletHour": form[3]},
+                                                   clickdata={"type": "submit"},
+                                                   callback=self.parse)
 
     def parse(self, response):
-        # TODO: Substitute response.url for DAY and HOUR
-        # print('Getting tracks for url...' + response.url)
+        print('Getting tracks for form request... ' + response.request.body)
 
         titles = response.css('span.artist::text').extract()
         artists = response.css('span.track::text').extract()
@@ -123,12 +114,12 @@ class NpoRadio6Spider(scrapy.Spider):
             print('Appending Track -> ' + '"' + title + '"' + ' by ' + artist)
             self.sheet.write(self.row, 0, title)
             self.sheet.write(self.row, 1, artist)
-            # self.sheet.write(self.row, 3, response.url)
+            self.sheet.write(self.row, 3, response.request.body)
             self.row += 1
-            # self.all_tracks.append([title, artist, response.url])
+            self.all_tracks.append([title, artist, response.request.body])
             self.list_xls.save(self.radio_station + '.xls')
 
-        # print('...tracks of url [ ' + response.url + ' ] finished.')
+        print('...tracks of form request [ ' + response.request.body + ' ] finished.')
 
     def parse_error(self, response):
         print('There was an error.')
