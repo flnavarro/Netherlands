@@ -159,7 +159,7 @@ else:
 
 spider_name = 'Rtv'
 station = ['Drenthe', 'Noord']
-radio_station = station[0]
+radio_station = station[1]
 
 nl_crawler = NetherlandsCrawler(spider_name=spider_name, radio_station=radio_station,
                                 day_begin='01-01-2017', day_end='31-07-2017')
