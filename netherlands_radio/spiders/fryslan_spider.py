@@ -46,9 +46,11 @@ class FryslanSpider(scrapy.Spider):
         self.programmes = [
             ['alvestedetochtrige', 'NONE'],
             ['befrijingsfestival-fryslan', 'NONE'],
-            ['buro-de-vries', 'NONE'],
+            ['buro-de-vries', '1100'],
+            ['buro-de-vries', '2100'],
             ['datwiedoe', 'NONE'],
             ['de-dei-foarby', '2200'],
+            ['de-dei-foarby', '2230'],
             ['de-flier-is-fan-jim', 'NONE'],
             ['de-gouden-finylmiddei', 'NONE'],
             ['de-grutte-nostalgy-show', 'NONE'],
@@ -66,23 +68,23 @@ class FryslanSpider(scrapy.Spider):
             ['fryske-top-100', 'NONE'],
             ['fryske-tsjerketsjinst', 'NONE'],
             ['fryslan-aktueel-ferkiezings', 'NONE'],
-            ['fryslan-fan-e-moarn', 'NONE'],
+            ['fryslan-fan-e-moarn', '0600'],
             ['fryslan-kiest', 'NONE'],
             ['fryslan-nonstop', '0000'],
-            ['fytsalvestedetocht', 'NONE'],
+            ['fytsalvestedetocht', '0800'],
             ['hjoed-1700-oere', 'NONE'],
             ['in-fleanende-start', 'NONE'],
             ['it-jier-ut', 'NONE'],
             ['jazzkafee-wijnbergen', 'NONE'],
             ['junpraters', 'NONE'],
-            ['koperkanaal-fm', 'NONE'],
+            ['koperkanaal-fm', '0600'],
             ['krystkonsert-radio', 'NONE'],
             ['linkk', 'NONE'],
             ['lotting-pc', 'NONE'],
             ['mei-douwe', 'NONE'],
             ['met-het-oog-op-morgen', '2300'],
             ['muzyk-maskelyn', 'NONE'],
-            ['muzyk-yn-bedriuw', 'NONE'],
+            ['muzyk-yn-bedriuw', '0900'],
             ['no-yn-fryslan', '0800'],
             ['no-yn-fryslan', '1200'],
             ['noardewyn', 'NONE'],
@@ -95,14 +97,15 @@ class FryslanSpider(scrapy.Spider):
             ['pc-kafee', 'NONE'],
             ['piter-wilkens-de-fleanende-hollanner', 'NONE'],
             ['prelude', 'NONE'],
-            ['radio-froskepole', 'NONE'],
+            ['radio-froskepole', '1800'],
+            ['radio-froskepole', '0000'],
             ['reade-tried', 'NONE'],
             ['rients', 'NONE'],
             ['rnc-jieroersjoch', 'NONE'],
             ['simmer-yn-fryslan', 'NONE'],
             ['skutsjekafee', 'NONE'],
-            ['snein-yn-fryslan', 'NONE'],
-            ['sneon-yn-fryslan', 'NONE'],
+            ['snein-yn-fryslan', '1300'],
+            ['sneon-yn-fryslan', '1300'],
             ['weistra-op-wei', '1600']
         ]
 
@@ -124,7 +127,6 @@ class FryslanSpider(scrapy.Spider):
 
     def build_urls(self):
         print('Building urls...')
-        # TODO: CHECK IF IT WORKS PROPERLY
         is_within_requested_days = True
         while True:
             if is_within_requested_days:

@@ -132,7 +132,7 @@ else:
 # spider_name = 'Relisten'
 # station = ['veronica', '3fm', 'skyradio', 'qmusic', '100p',
 #            'radio10', '538', 'slamfm', 'sublimefm', 'radionl']
-# radio_station = station[0]
+# radio_station = station[9]
 
 # spider_name = 'NpoRadio'
 # station = ['NpoRadio1', 'NpoRadio2', 'NpoRadio4', 'NpoRadio5']
