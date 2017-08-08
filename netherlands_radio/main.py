@@ -10,6 +10,8 @@ from spiders.nporadio_spider import NpoRadioSpider
 from spiders.classicfm_spider import ClassicFmSpider
 from spiders.omroep_spider import OmroepSpider
 from spiders.fryslan_spider import FryslanSpider
+from spiders.nporadio6_spider import NpoRadio6Spider
+from spiders.rtv_spider import RtvSpider
 
 
 class NetherlandsCrawler(object):
@@ -26,6 +28,10 @@ class NetherlandsCrawler(object):
             self.spider = OmroepSpider
         elif spider_name == 'Fryslan':
             self.spider = FryslanSpider
+        elif spider_name == 'NpoRadio6':
+            self.spider = NpoRadio6Spider
+        elif spider_name == 'Rtv':
+            self.spider = RtvSpider
 
         self.radio_station = radio_station
         self.day_begin = day_begin
@@ -145,8 +151,15 @@ else:
 # station = ['Brabant', 'Flevoland']
 # radio_station = station[1]
 
-spider_name = 'Fryslan'
-radio_station = 'Fryslan'
+# spider_name = 'Fryslan'
+# radio_station = 'Fryslan'
+
+# spider_name = 'NpoRadio6'
+# radio_station = 'NpoRadio6'
+
+spider_name = 'Rtv'
+station = ['Drenthe', 'Noord']
+radio_station = station[0]
 
 nl_crawler = NetherlandsCrawler(spider_name=spider_name, radio_station=radio_station,
                                 day_begin='01-01-2017', day_end='31-07-2017')
