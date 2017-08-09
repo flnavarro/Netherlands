@@ -22,11 +22,11 @@ class RtvSpider(scrapy.Spider):
         if self.radio_station == 'Drenthe':
             self.root_url = 'http://www.rtvdrenthe.nl/ajax/RadioTv/GetPlaylistDay?date='
             if self.day_begin == '':
-                self.day_begin = '01-01-2017'
+                self.day_begin = '04-03-2016'
         elif self.radio_station == 'Noord':
             self.root_url = 'http://www.rtvnoord.nl/ajax/RadioTv/GetPlaylistDay?date='
             if self.day_begin == '':
-                self.day_begin = '01-01-2016'
+                self.day_begin = '12-10-2015'
 
         self.urls = []
         self.build_urls()
@@ -45,7 +45,8 @@ class RtvSpider(scrapy.Spider):
         is_within_requested_days = True
         while True:
             if is_within_requested_days:
-                url = self.root_url + self.day
+                day_url = self.day[3:5] + '-' + self.day[:2] + '-' + self.day[6:]
+                url = self.root_url + day_url
                 print('NEW URL -> ' + url)
                 self.urls.append(url)
                 is_within_requested_days = self.get_previous_day()

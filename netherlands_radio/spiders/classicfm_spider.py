@@ -92,6 +92,7 @@ class ClassicFmSpider(scrapy.Spider):
     def parse(self, response):
         print('Getting tracks for url...' + response.url)
 
+        # TODO: CHECK OUT OF RANGE
         tracks = response.css('tr').extract()[1:]
         artists = response.css('strong::text').extract()[2:]
 

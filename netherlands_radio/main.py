@@ -138,7 +138,7 @@ else:
 # spider_name = 'Relisten'
 # station = ['veronica', '3fm', 'skyradio', 'qmusic', '100p',
 #            'radio10', '538', 'slamfm', 'sublimefm', 'radionl']
-# radio_station = station[8]
+# radio_station = station[9]
 
 # spider_name = 'NpoRadio'
 # station = ['NpoRadio1', 'NpoRadio2', 'NpoRadio4', 'NpoRadio5']
@@ -154,14 +154,14 @@ else:
 # spider_name = 'Fryslan'
 # radio_station = 'Fryslan'
 
-spider_name = 'NpoRadio6'
-radio_station = 'NpoRadio6'
+# spider_name = 'NpoRadio6'
+# radio_station = 'NpoRadio6'
 
-# spider_name = 'Rtv'
-# station = ['Drenthe', 'Noord']
-# radio_station = station[1]
+spider_name = 'Rtv'
+station = ['Drenthe', 'Noord']
+radio_station = station[1]
 
 nl_crawler = NetherlandsCrawler(spider_name=spider_name, radio_station=radio_station,
-                                day_begin='01-01-2017', day_end='31-07-2017')
+                                day_begin='', day_end='31-12-2016')
 nl_crawler.get_lists()
 nl_crawler.count_plays()

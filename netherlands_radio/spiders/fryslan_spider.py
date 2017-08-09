@@ -16,9 +16,8 @@ class FryslanSpider(scrapy.Spider):
         self.day_end = day_end
         self.day = self.day_end
 
-        # TODO: CHECK THIS!
         if self.day_begin == '':
-            self.day_begin = 'NONE'
+            self.day_begin = '02-02-2015'
 
         self.root_url = 'http://www.omropfryslan.nl/utstjoering/'
 

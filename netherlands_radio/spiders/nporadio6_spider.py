@@ -18,9 +18,8 @@ class NpoRadio6Spider(scrapy.Spider):
         self.day_end = day_end
         self.day = day_end
 
-        # TODO: CHECK WHICH DAY IS FIRST
         if self.day_begin == '':
-            self.day_begin = '00-00-0000'
+            self.day_begin = '01-01-2016'
 
         self.root_url = 'http://www.nposoulenjazz.nl/playlist'
 
