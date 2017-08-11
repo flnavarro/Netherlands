@@ -10,7 +10,7 @@ import settings
 class FryslanSpider(scrapy.Spider):
     name = "Fryslan"
 
-    def __init__(self, radio_station, day_begin, day_end):
+    def __init__(self, radio_station, day_begin, day_end, repair_opt=False):
         self.radio_station = radio_station
         self.day_begin = day_begin
         self.day_end = day_end
@@ -32,6 +32,11 @@ class FryslanSpider(scrapy.Spider):
         self.valid_urls = []
         self.build_urls()
 
+        self.list_invalid = xlwt.Workbook()
+        self.sheet_invalid = self.list_invalid.add_sheet('Invalid URLs')
+        self.sheet_invalid.write(0, 0, 'URL')
+        self.row_invalid = 1
+
         self.all_tracks = []
         self.list_xls = xlwt.Workbook()
         self.sheet = self.list_xls.add_sheet(self.radio_station + 'Playlist')
@@ -43,66 +48,68 @@ class FryslanSpider(scrapy.Spider):
 
     def get_programmes(self):
         self.programmes = [
-            ['alvestedetochtrige', 'NONE'],
-            ['befrijingsfestival-fryslan', 'NONE'],
+            # ['alvestedetochtrige', 'NONE'],
+            # ['befrijingsfestival-fryslan', 'NONE'],
             ['buro-de-vries', '1100'],
             ['buro-de-vries', '2100'],
-            ['datwiedoe', 'NONE'],
+            # ['datwiedoe', 'NONE'],
             ['de-dei-foarby', '2200'],
             ['de-dei-foarby', '2230'],
-            ['de-flier-is-fan-jim', 'NONE'],
-            ['de-gouden-finylmiddei', 'NONE'],
-            ['de-grutte-nostalgy-show', 'NONE'],
+            # ['de-flier-is-fan-jim', 'NONE'],
+            # ['de-gouden-finylmiddei', 'NONE'],
+            # ['de-grutte-nostalgy-show', 'NONE'],
             ['de-jun-fan-fryslan', '1900'],
-            ['de-krystdagen-fan-fryslan', 'NONE'],
+            # ['de-krystdagen-fan-fryslan', 'NONE'],
             ['de-middei-fan-fryslan', '1300'],
-            ['de-rjochtsaak', 'NONE'],
-            ['de-top-fan-de-jierren-70', 'NONE'],
-            ['deadebetinking-ljouwert', 'NONE'],
-            ['fersykplaten', 'NONE'],
-            ['fierljep-kafee', 'NONE'],
-            ['fierljepkafee', 'NONE'],
-            ['finale-stimdei', 'NONE'],
-            ['fryske-muzykwike', 'NONE'],
-            ['fryske-top-100', 'NONE'],
-            ['fryske-tsjerketsjinst', 'NONE'],
-            ['fryslan-aktueel-ferkiezings', 'NONE'],
+            # ['de-rjochtsaak', 'NONE'],
+            # ['de-top-fan-de-jierren-70', 'NONE'],
+            # ['deadebetinking-ljouwert', 'NONE'],
+            # ['fersykplaten', 'NONE'],
+            # ['fierljep-kafee', 'NONE'],
+            # ['fierljepkafee', 'NONE'],
+            # ['finale-stimdei', 'NONE'],
+            # ['fryske-muzykwike', 'NONE'],
+            ['fryske-top-100', '1230'],
+            # ['fryske-tsjerketsjinst', 'NONE'],
+            # ['fryslan-aktueel-ferkiezings', 'NONE'],
             ['fryslan-fan-e-moarn', '0600'],
-            ['fryslan-kiest', 'NONE'],
+            # ['fryslan-kiest', 'NONE'],
             ['fryslan-nonstop', '0000'],
             ['fytsalvestedetocht', '0800'],
-            ['hjoed-1700-oere', 'NONE'],
-            ['in-fleanende-start', 'NONE'],
-            ['it-jier-ut', 'NONE'],
-            ['jazzkafee-wijnbergen', 'NONE'],
-            ['junpraters', 'NONE'],
+            # ['hjoed-1700-oere', 'NONE'],
+            # ['in-fleanende-start', 'NONE'],
+            ['it-jier-ut', '0900'],
+            # ['jazzkafee-wijnbergen', 'NONE'],
+            # ['junpraters', 'NONE'],
             ['koperkanaal-fm', '0600'],
-            ['krystkonsert-radio', 'NONE'],
-            ['linkk', 'NONE'],
-            ['lotting-pc', 'NONE'],
-            ['mei-douwe', 'NONE'],
+            # ['krystkonsert-radio', 'NONE'],
+            # ['linkk', 'NONE'],
+            # ['lotting-pc', 'NONE'],
+            # ['mei-douwe', 'NONE'],
             ['met-het-oog-op-morgen', '2300'],
-            ['muzyk-maskelyn', 'NONE'],
+            # ['muzyk-maskelyn', 'NONE'],
             ['muzyk-yn-bedriuw', '0900'],
             ['no-yn-fryslan', '0800'],
             ['no-yn-fryslan', '1200'],
-            ['noardewyn', 'NONE'],
-            ['noardewyn-live', 'NONE'],
-            ['oer-de-grins', 'NONE'],
-            ['omnium', 'NONE'],
-            ['omrop-fryslan-aktueel', 'NONE'],
+            # ['noardewyn', 'NONE'],
+            # ['noardewyn-live', 'NONE'],
+            # ['oer-de-grins', 'NONE'],
+            # ['omnium', 'NONE'],
+            # ['omrop-fryslan-aktueel', 'NONE'],
             ['omrop-fryslan-sport', '1800'],
-            ['op-ult', 'NONE'],
-            ['pc-kafee', 'NONE'],
-            ['piter-wilkens-de-fleanende-hollanner', 'NONE'],
-            ['prelude', 'NONE'],
+            # ['op-ult', 'NONE'],
+            # ['pc-kafee', 'NONE'],
+            # ['piter-wilkens-de-fleanende-hollanner', 'NONE'],
+            # ['prelude', 'NONE'],
             ['radio-froskepole', '1800'],
             ['radio-froskepole', '0000'],
-            ['reade-tried', 'NONE'],
-            ['rients', 'NONE'],
-            ['rnc-jieroersjoch', 'NONE'],
-            ['simmer-yn-fryslan', 'NONE'],
-            ['skutsjekafee', 'NONE'],
+            # ['reade-tried', 'NONE'],
+            # ['rients', 'NONE'],
+            # ['rnc-jieroersjoch', 'NONE'],
+            ['simmer-yn-fryslan', '0700'],
+            ['simmer-yn-fryslan', '0900'],
+            ['simmer-yn-fryslan', '1300'],
+            # ['skutsjekafee', 'NONE'],
             ['snein-yn-fryslan', '1300'],
             ['sneon-yn-fryslan', '1300'],
             ['weistra-op-wei', '1600']
@@ -200,12 +207,19 @@ class FryslanSpider(scrapy.Spider):
             self.sheet.write(self.row, 3, response.url)
             self.row += 1
             self.all_tracks.append([title, artist, response.url])
-            self.list_xls.save(self.radio_station + '.xls')
+        self.list_xls.save(self.radio_station + '_raw.xls')
 
         print('...tracks of url [ ' + response.url + ' ] finished.')
 
     def parse_error(self, response):
-        print('There was an error.')
+        if response.value.response.status == 404 \
+                or response.value.response.status == 400:
+            # self.sheet_invalid.write(self.row_invalid, 0, response.request.url)
+            # self.row_invalid += 1
+            # self.list_invalid.save(self.radio_station + '_invalid_urls.xls')
+            print('There was an error of type ' + str(response.value.response.status))
+        elif response.value.response.status == 408:
+            print('TIMEOUT!')
 
     def save_and_close_spider(self):
         pass

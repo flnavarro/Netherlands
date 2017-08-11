@@ -1,7 +1,7 @@
 import os
 import calendar
 import scrapy
-import xlwt
+import xlwt, xlrd
 from scrapy.exceptions import CloseSpider
 
 import settings
@@ -10,11 +10,12 @@ import settings
 class RelistenSpider(scrapy.Spider):
     name = "Relisten"
 
-    def __init__(self, radio_station, day_begin, day_end):
+    def __init__(self, radio_station, day_begin, day_end, repair_opt=False):
         self.radio_station = radio_station
         self.day_begin = day_begin
         self.day_end = day_end
         self.day = self.day_end
+        self.repair_opt = repair_opt
 
         if self.day_begin == '':
             if self.radio_station == 'veronica' or self.radio_station == 'skyradio':
@@ -36,6 +37,12 @@ class RelistenSpider(scrapy.Spider):
         self.urls = []
         self.build_urls()
 
+        if self.repair_opt:
+            self.urls_to_repair = []
+            self.build_repair_urls()
+            if len(self.urls_to_repair) == 0:
+                print('Could not find any url to repair')
+
         self.all_tracks = []
         self.list_xls = xlwt.Workbook()
         self.sheet = self.list_xls.add_sheet(self.radio_station + 'Playlist')
@@ -44,6 +51,25 @@ class RelistenSpider(scrapy.Spider):
         self.sheet.write(0, 2, 'Count')
         self.sheet.write(0, 3, 'URL From')
         self.row = 1
+
+    def build_repair_urls(self):
+        raw_file_path = self.radio_station + '_repair.xls'
+        if os.path.exists(raw_file_path):
+            xls = xlrd.open_workbook(raw_file_path, formatting_info=True)
+            n_rows = xls.sheet_by_index(0).nrows
+            sheet_read = xls.sheet_by_index(0)
+            urls_read = []
+            for row in range(1, n_rows):
+                url_from = sheet_read.cell(row, 3).value
+                if url_from not in urls_read:
+                    urls_read.append(url_from)
+            for url in self.urls:
+                if url not in urls_read:
+                    print('Found url to repair: ' + url)
+                    self.urls_to_repair.append(url)
+            self.urls = self.urls_to_repair
+        else:
+            print('Could not find a repair list.')
 
     def build_urls(self):
         print('Building urls...')
@@ -105,7 +131,7 @@ class RelistenSpider(scrapy.Spider):
             self.sheet.write(self.row, 3, response.url)
             self.row += 1
             self.all_tracks.append([title, artist, response.url])
-            self.list_xls.save(self.radio_station + '.xls')
+        self.list_xls.save(self.radio_station + '_raw.xls')
 
         print('...tracks of url [ ' + response.url + ' ] finished.')
 

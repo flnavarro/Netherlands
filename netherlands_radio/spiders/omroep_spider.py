@@ -12,7 +12,7 @@ import settings
 class OmroepSpider(scrapy.Spider):
     name = "Omroep"
 
-    def __init__(self, radio_station, day_begin, day_end):
+    def __init__(self, radio_station, day_begin, day_end, repair_opt):
         self.radio_station = radio_station
         self.day_begin = day_begin
         self.day_end = day_end
@@ -84,7 +84,7 @@ class OmroepSpider(scrapy.Spider):
             self.sheet.write(self.row, 3, response.url)
             self.row += 1
             self.all_tracks.append([title, artist, response.url])
-            self.list_xls.save(self.radio_station + '.xls')
+        self.list_xls.save(self.radio_station + '_raw.xls')
 
         print('...tracks of url [ ' + response.url + ' ] finished.')
 

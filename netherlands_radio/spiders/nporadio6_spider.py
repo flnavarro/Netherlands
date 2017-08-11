@@ -2,7 +2,7 @@ import os
 import calendar
 import scrapy
 import time
-import xlwt
+import xlwt, xlrd
 from scrapy.exceptions import CloseSpider
 from scrapy.http import HtmlResponse
 
@@ -12,11 +12,12 @@ import settings
 class NpoRadio6Spider(scrapy.Spider):
     name = "NpoRadio6"
 
-    def __init__(self, radio_station, day_begin, day_end):
+    def __init__(self, radio_station, day_begin, day_end, repair_opt=False):
         self.radio_station = radio_station
         self.day_begin = day_begin
         self.day_end = day_end
         self.day = day_end
+        self.repair_opt = repair_opt
 
         if self.day_begin == '':
             self.day_begin = '01-01-2016'
@@ -26,6 +27,12 @@ class NpoRadio6Spider(scrapy.Spider):
         self.forms = []
         self.build_forms()
 
+        if self.repair_opt:
+            self.forms_to_repair = []
+            self.build_repair_forms()
+            if len(self.forms_to_repair) == 0:
+                print('Could not find any url to repair')
+
         self.all_tracks = []
         self.list_xls = xlwt.Workbook()
         self.sheet = self.list_xls.add_sheet(self.radio_station + 'Playlist')
@@ -34,6 +41,29 @@ class NpoRadio6Spider(scrapy.Spider):
         self.sheet.write(0, 2, 'Count')
         self.sheet.write(0, 3, 'URL From')
         self.row = 1
+
+    def build_repair_forms(self):
+        raw_file_path = self.radio_station + '_repair.xls'
+        if os.path.exists(raw_file_path):
+            xls = xlrd.open_workbook(raw_file_path, formatting_info=True)
+            n_rows = xls.sheet_by_index(0).nrows
+            sheet_read = xls.sheet_by_index(0)
+            forms_read = []
+            for row in range(1, n_rows):
+                form = sheet_read.cell(row, 3).value
+                if form not in forms_read:
+                    forms_read.append(form)
+            for form in self.forms:
+                string_form = 'daletMonth=' + form[1] + \
+                               '&daletYear=' + form[2] + \
+                               '&daletHour=' + form[3] + \
+                               '&daletDay=' + form[0]
+                if string_form not in forms_read:
+                    print('Found form for url to repair: ' + string_form)
+                    self.forms_to_repair.append(form)
+            self.forms = self.forms_to_repair
+        else:
+            print('Could not find a repair list.')
 
     def build_forms(self):
         print('Building forms...')
@@ -103,8 +133,8 @@ class NpoRadio6Spider(scrapy.Spider):
     def parse(self, response):
         print('Getting tracks for form request... ' + response.request.body)
 
-        titles = response.css('span.artist::text').extract()
-        artists = response.css('span.track::text').extract()
+        titles = response.css('span.track::text').extract()
+        artists = response.css('span.artist::text').extract()
 
         for title in titles:
             artist = artists[titles.index(title)].title()
@@ -116,7 +146,7 @@ class NpoRadio6Spider(scrapy.Spider):
             self.sheet.write(self.row, 3, response.request.body)
             self.row += 1
             self.all_tracks.append([title, artist, response.request.body])
-            self.list_xls.save(self.radio_station + '.xls')
+        self.list_xls.save(self.radio_station + '_raw.xls')
 
         print('...tracks of form request [ ' + response.request.body + ' ] finished.')
 
